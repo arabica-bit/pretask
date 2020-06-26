@@ -8,6 +8,8 @@ import javax.persistence.*;
 @Data
 public class SprayTask {
 
+    public SprayTask() {}
+
     public SprayTask(final String token, final String created, final Long owner,
                      final String room, final int number, final int seed){
         this.token = token;
@@ -40,6 +42,4 @@ public class SprayTask {
     @Column
     private int seed;
 
-    public SprayTask() {
-    }
 }

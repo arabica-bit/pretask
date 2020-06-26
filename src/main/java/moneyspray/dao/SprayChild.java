@@ -8,6 +8,8 @@ import javax.persistence.*;
 @Data
 public class SprayChild {
 
+    public SprayChild(){}
+
     public SprayChild (final String parent, final int amount){
         this.parent = parent;
         this.amount = amount;
@@ -25,5 +27,5 @@ public class SprayChild {
     private int amount;
 
     @Column
-    private String who;
+    private Long who;
 }

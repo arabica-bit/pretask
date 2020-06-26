@@ -1,6 +1,8 @@
 package moneyspray.controller;
 
 import moneyspray.service.SprayService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class SprayController {
+    private static Logger logger = LoggerFactory.getLogger(SprayController.class);
 
     private final SprayService sprayService;
 
@@ -33,7 +36,14 @@ public class SprayController {
     public ResponseEntity receiveMoney(String token,
                                        @RequestHeader("X-USER-ID") Long userId,
                                        @RequestHeader("X-ROOM-ID") String roomId) {
-        return ResponseEntity.ok("TEST 2 OK");
+
+        try {
+            return ResponseEntity.ok(sprayService.receiveMoney(token, userId, roomId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.ok(e.toString());
+        }
     }
 
     @GetMapping("/apis/spray/status")
@@ -41,7 +51,12 @@ public class SprayController {
                                          @RequestHeader("X-USER-ID") Long userId,
                                          @RequestHeader("X-ROOM-ID") String roomId) {
 
-        return ResponseEntity.ok("TEST 3 OK with " + userId + ", " + roomId);
+        try {
+            return ResponseEntity.ok(sprayService.getSprayStatus(token, userId, roomId));
+        } catch (Exception e) {
+            logger.error(e.toString());
+            return ResponseEntity.ok("ERROR 500");
+        }
     }
 
 }
