@@ -1,8 +1,11 @@
 package moneyspray.domain;
 
+import lombok.Data;
+
 import javax.persistence.*;
 
 @Entity
+@Data
 public class SprayTask {
 
     @Id
@@ -27,4 +30,6 @@ public class SprayTask {
     @Column
     private int seed;
 
+    public SprayTask() {
+    }
 }
