@@ -8,6 +8,12 @@ import javax.persistence.*;
 @Data
 public class SprayChild {
 
+    public SprayChild (final String parent, final int amount){
+        this.parent = parent;
+        this.amount = amount;
+        this.who = null;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

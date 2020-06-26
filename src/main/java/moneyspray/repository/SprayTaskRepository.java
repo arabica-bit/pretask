@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SprayTaskRepository extends JpaRepository<SprayTask,Long> {
-    SprayTask findByToken(String token);
+    SprayTask findByTokenAndRoom(String token, String room);
 
 }
