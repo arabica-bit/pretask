@@ -1,4 +1,4 @@
-package moneyspray.domain;
+package moneyspray.dao;
 
 import lombok.Data;
 
