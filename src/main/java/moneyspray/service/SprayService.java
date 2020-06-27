@@ -3,6 +3,8 @@ package moneyspray.service;
 import moneyspray.Util.TokenNameUtil;
 import moneyspray.dao.SprayChild;
 import moneyspray.dao.SprayTask;
+import moneyspray.dto.SprayChildResponseDto;
+import moneyspray.dto.SprayStatusResponseDto;
 import moneyspray.repository.SprayChildRepository;
 import moneyspray.repository.SprayTaskRepository;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -85,6 +88,13 @@ public class SprayService {
             throw new Exception("존재하지 않는 뿌린기 정보입니다.");
         }
 
+        //오너체크
+        Long sprayOwner = sprayTask.getOwner();
+        if(sprayOwner.compareTo(userId) == 0){
+            //뿌리기를 만든 사용자는 받을 수 없음.
+            throw new Exception("자신이 뿌리기한 건은 자신이 받을 수 없습니다.");
+        }
+
         //시간 체크
         String createdStr = sprayTask.getCreated();
         LocalDateTime createdLocal = LocalDateTime.parse(createdStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -94,13 +104,6 @@ public class SprayService {
         if(!now.isBefore(compareTime)){
             //현재 시간이 (생성시간+10분)보다 before가 아니므로 에러.
             throw new Exception("뿌리기는 10분간만 유효합니다.");
-        }
-
-        //오너체크
-        Long sprayOwner = sprayTask.getOwner();
-        if(sprayOwner.compareTo(userId) == 0){
-            //뿌리기를 만든 사용자는 받을 수 없음.
-            throw new Exception("자신이 뿌리기한 건은 자신이 받을 수 없습니다.");
         }
 
         List<SprayChild> sprayChildList = sprayChildRepository.findAllByParent(token);
@@ -130,11 +133,62 @@ public class SprayService {
 
 
     @Transactional
-    public List<SprayChild> getSprayStatus (String token, Long userId, String roomId) throws Exception {
+    public SprayStatusResponseDto getSprayStatus (String token, Long userId, String roomId) throws Exception {
         logger.info("getSprayStatus input1[{}], input2[{}], input3[{}]", token, userId, roomId);
-        //TODO 기본 정보랑 합쳐서 보내줘야 하고, 받기 완료된 항목만 리턴해야 함. 시간체크도.
-        return sprayChildRepository.findAllByParent(token);
+
+        SprayTask sprayTask = sprayTaskRepository.findByTokenAndRoom(token, roomId);
+        if(sprayTask == null){
+            //조회할 뿌리기 없음.
+            throw new Exception("존재하지 않는 뿌리기 정보입니다.");
+        }
+
+        //오너 체크
+        Long sprayOwner = sprayTask.getOwner();
+        if(sprayOwner.compareTo(userId) != 0){
+            //뿌리기를 만든 사용자만 조회할 수 있음.
+            throw new Exception("해당 정보를 조회할 수 없습니다.");
+        }
+
+        //시간 체크
+        String createdStr = sprayTask.getCreated();
+        LocalDateTime createdLocal = LocalDateTime.parse(createdStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        //제한시간 = 뿌리기생성시간+7일
+        LocalDateTime compareTime = createdLocal.plusDays(7);
+        LocalDateTime now = LocalDateTime.now();
+        if(!now.isBefore(compareTime)){
+            //현재 시간이 (생성시간+7일)보다 before가 아니므로 에러.
+            throw new Exception("뿌리기 상태 조회는 7일 동안만 가능합니다.");
+        }
+
+        //조합
+        SprayStatusResponseDto statusResponseDto = new SprayStatusResponseDto();
+        statusResponseDto.setCreated(createdStr);
+        statusResponseDto.setSeed(sprayTask.getSeed());
+        List<SprayChild> sprayChildList = sprayChildRepository.findAllByParent(token);
+        int sum = assembleStatusResponse(statusResponseDto, sprayChildList);
+        statusResponseDto.setReceivedTotal(sum);
+
+        return statusResponseDto;
+    }
+
+
+    private int assembleStatusResponse(final SprayStatusResponseDto statusResponseDto, final List<SprayChild> sprayChildList){
+        List<SprayChildResponseDto> childResponseDtoList = new ArrayList<>();
+
+        //받기 완료된 사용자를 결과 리스트에 추가하고, 완료된 금액을 계산.
+        int sum = 0;
+        for(SprayChild child : sprayChildList) {
+            if(child.getWho() != null){
+                SprayChildResponseDto childResponseDto = new SprayChildResponseDto(child.getAmount(), child.getWho());
+                sum += child.getAmount();
+                childResponseDtoList.add(childResponseDto);
+            }
+        }
+
+        statusResponseDto.setReceivedList(childResponseDtoList);
+        return sum;
     }
 
 }
+
 
