@@ -13,8 +13,8 @@ public class TokenNameUtil {
                 int rIndex = rnd.nextInt(3);
                 switch (rIndex) {
                     case 0:
-                        // a-z
-                        temp.append((char) ((int) (rnd.nextInt(26)) + 97));
+                        // '()*+,-./
+                        temp.append((char) ((int) (rnd.nextInt(10)) + 39));
                         break;
                     case 1:
                         // A-Z
