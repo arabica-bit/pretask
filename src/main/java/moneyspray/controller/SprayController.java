@@ -19,7 +19,7 @@ public class SprayController {
         this.sprayService = sprayService;
     }
 
-    @PostMapping("/apis/spray/new")
+    @PostMapping("/apis/spray/create")
     public ResponseEntity createSpray(int money, int member,
                                       @RequestHeader("X-USER-ID") Long userId,
                                       @RequestHeader("X-ROOM-ID") String roomId) {
@@ -27,7 +27,8 @@ public class SprayController {
         try {
             return ResponseEntity.ok(sprayService.createSprayService(money, member, userId, roomId));
         } catch (Exception e) {
-            return ResponseEntity.ok("ERROR 500");
+            logger.error(e.getMessage());
+            return ResponseEntity.ok(e.toString());
         }
 
     }
@@ -40,7 +41,7 @@ public class SprayController {
         try {
             return ResponseEntity.ok(sprayService.receiveMoney(token, userId, roomId));
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             logger.error(e.getMessage());
             return ResponseEntity.ok(e.toString());
         }
@@ -55,7 +56,7 @@ public class SprayController {
             return ResponseEntity.ok(sprayService.getSprayStatus(token, userId, roomId));
         } catch (Exception e) {
             logger.error(e.toString());
-            return ResponseEntity.ok("ERROR 500");
+            return ResponseEntity.ok(e.toString());
         }
     }
 

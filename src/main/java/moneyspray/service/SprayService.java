@@ -29,12 +29,13 @@ public class SprayService {
 
     @Transactional
     public String createSprayService (int money, int member, Long userId, String roomId) throws Exception {
+        logger.info("createSprayService input1[{}], input2[{}], input3[{}], input4[{}]", money, member, userId, roomId);
 
         //생성 시간
         LocalDateTime currentDateTime = LocalDateTime.now();
         String created = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        //Token 생성
+        //Token 생성 + 중복 검사
         String newToken = new TokenNameUtil().getNewName();
         SprayTask sameSprayTask = sprayTaskRepository.findByTokenAndRoom(newToken, roomId);
         //혹시 Token이 중복되면 최대 10번까지 재생성 시도.
@@ -43,8 +44,12 @@ public class SprayService {
             newToken = new TokenNameUtil().getNewName();
             sameSprayTask = sprayTaskRepository.findByTokenAndRoom(newToken, roomId);
         }
+        if(sameSprayTask != null){
+            //생성한 토큰이 자꾸 중복됨.
+            throw new Exception("뿌리기 생성중 문제가 발생했습니다.");
+        }
 
-        //뿌리기 객체 생성
+        //새로운 뿌리기 객체 생성
         SprayTask sprayTask = new SprayTask(newToken, created, userId, roomId, member, money);
         sprayTaskRepository.save(sprayTask);
 
