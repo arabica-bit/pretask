@@ -67,7 +67,6 @@ public class SprayService {
 
             SprayChild sprayChild = new SprayChild(sprayTask.getToken(), rMoney);
             sprayChildRepository.save(sprayChild);
-            //TODO 0원 나온 멤버 있다. 수정했는데 잘 나오는지 확인해야함. 수정을 잘 못했네. 이제 될듯.
             remain = remain-rMoney;
         }
         // (member-1)만큼만 루프 돌리고. 마지막 멤버가 잔액을 모두 갖도록 하여 분배 마무리.
