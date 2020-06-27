@@ -1,5 +1,6 @@
 package moneyspray.controller;
 
+import moneyspray.exception.ServiceException;
 import moneyspray.service.SprayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +27,12 @@ public class SprayController {
 
         try {
             return ResponseEntity.ok(sprayService.createSprayService(money, member, userId, roomId));
-        } catch (Exception e) {
+        } catch (ServiceException se) {
+            return ResponseEntity.ok(se.toString());
+        } catch (Exception e){
+            e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.ok(e.toString());
+            return ResponseEntity.ok("ERROR");
         }
 
     }
@@ -40,10 +44,12 @@ public class SprayController {
 
         try {
             return ResponseEntity.ok(sprayService.receiveMoney(token, userId, roomId));
-        } catch (Exception e) {
-            //e.printStackTrace();
+        } catch (ServiceException se) {
+            return ResponseEntity.ok(se.toString());
+        } catch (Exception e){
+            e.printStackTrace();
             logger.error(e.getMessage());
-            return ResponseEntity.ok(e.toString());
+            return ResponseEntity.ok("ERROR");
         }
     }
 
@@ -54,9 +60,12 @@ public class SprayController {
 
         try {
             return ResponseEntity.ok(sprayService.getSprayStatus(token, userId, roomId));
-        } catch (Exception e) {
-            logger.error(e.toString());
-            return ResponseEntity.ok(e.toString());
+        } catch (ServiceException se) {
+            return ResponseEntity.ok(se.toString());
+        } catch (Exception e){
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.ok("ERROR");
         }
     }
 

@@ -5,6 +5,7 @@ import moneyspray.dao.SprayChild;
 import moneyspray.dao.SprayTask;
 import moneyspray.dto.SprayChildResponseDto;
 import moneyspray.dto.SprayStatusResponseDto;
+import moneyspray.exception.ServiceException;
 import moneyspray.repository.SprayChildRepository;
 import moneyspray.repository.SprayTaskRepository;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class SprayService {
         }
         if(sameSprayTask != null){
             //생성한 토큰이 자꾸 중복됨.
-            throw new Exception("뿌리기 생성중 문제가 발생했습니다.");
+            throw new ServiceException("뿌리기 생성중 문제가 발생했습니다.");
         }
 
         //새로운 뿌리기 객체 생성
@@ -85,14 +86,14 @@ public class SprayService {
         SprayTask sprayTask = sprayTaskRepository.findByTokenAndRoom(token, roomId);
         if(sprayTask == null){
             //대화방에 해당하는 토큰이 없음.
-            throw new Exception("존재하지 않는 뿌린기 정보입니다.");
+            throw new ServiceException("존재하지 않는 뿌린기 정보입니다.");
         }
 
         //오너체크
         Long sprayOwner = sprayTask.getOwner();
         if(sprayOwner.compareTo(userId) == 0){
             //뿌리기를 만든 사용자는 받을 수 없음.
-            throw new Exception("자신이 뿌리기한 건은 자신이 받을 수 없습니다.");
+            throw new ServiceException("자신이 뿌리기한 건은 자신이 받을 수 없습니다.");
         }
 
         //시간 체크
@@ -103,14 +104,14 @@ public class SprayService {
         LocalDateTime now = LocalDateTime.now();
         if(!now.isBefore(compareTime)){
             //현재 시간이 (생성시간+10분)보다 before가 아니므로 에러.
-            throw new Exception("뿌리기는 10분간만 유효합니다.");
+            throw new ServiceException("뿌리기는 10분간만 유효합니다.");
         }
 
         List<SprayChild> sprayChildList = sprayChildRepository.findAllByParent(token);
         for(SprayChild sprayChild : sprayChildList){
             if(sprayChild.getWho() != null && userId.equals(sprayChild.getWho())){
                 //이미 이 뿌리기에서 돈을 한번 받은 상황.
-                throw new Exception("뿌리기 당 한 사용자는 한번만 받을 수 있습니다.");
+                throw new ServiceException("뿌리기 당 한 사용자는 한번만 받을 수 있습니다.");
             }
 
             if(sprayChild.getWho() == null){
@@ -125,7 +126,7 @@ public class SprayService {
 
         if(amount < 0){
             //모든 금액 분배 완료
-            throw new Exception("뿌리기가 완료되었습니다.");
+            throw new ServiceException("뿌리기가 완료되었습니다.");
         }
 
         return -1;
@@ -139,14 +140,14 @@ public class SprayService {
         SprayTask sprayTask = sprayTaskRepository.findByTokenAndRoom(token, roomId);
         if(sprayTask == null){
             //조회할 뿌리기 없음.
-            throw new Exception("존재하지 않는 뿌리기 정보입니다.");
+            throw new ServiceException("존재하지 않는 뿌리기 정보입니다.");
         }
 
         //오너 체크
         Long sprayOwner = sprayTask.getOwner();
         if(sprayOwner.compareTo(userId) != 0){
             //뿌리기를 만든 사용자만 조회할 수 있음.
-            throw new Exception("해당 정보를 조회할 수 없습니다.");
+            throw new ServiceException("해당 정보를 조회할 수 없습니다.");
         }
 
         //시간 체크
@@ -157,7 +158,7 @@ public class SprayService {
         LocalDateTime now = LocalDateTime.now();
         if(!now.isBefore(compareTime)){
             //현재 시간이 (생성시간+7일)보다 before가 아니므로 에러.
-            throw new Exception("뿌리기 상태 조회는 7일 동안만 가능합니다.");
+            throw new ServiceException("뿌리기 상태 조회는 7일 동안만 가능합니다.");
         }
 
         //조합
